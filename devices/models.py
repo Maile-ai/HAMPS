@@ -73,3 +73,47 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.hostname} ({self.ip_address})"
+    
+
+class RestrictionRule(models.Model):
+    GROUP_CHOICES = [
+        ("kids", "Kids"),
+        ("teens", "Teens"),
+        ("adults", "Adults"),
+        ("guests", "Guests"),
+    ]
+
+    group = models.CharField(
+        max_length=10,
+        choices=GROUP_CHOICES,
+        unique=True,
+        help_text="Device group this rule applies to"
+    )
+
+    active = models.BooleanField(
+        default=True,
+        help_text="Whether this rule is currently active"
+    )
+
+    block_internet = models.BooleanField(
+        default=False,
+        help_text="Completely block internet access"
+    )
+
+    schedule_start = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Restriction start time (e.g. 21:00)"
+    )
+
+    schedule_end = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Restriction end time (e.g. 06:00)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rule for {self.group}"
+
