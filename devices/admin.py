@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Device, RestrictionRule, AccessLog
 
-# Register your models here.
+admin.site.register(Device)
+admin.site.register(RestrictionRule)
+admin.site.register(AccessLog)

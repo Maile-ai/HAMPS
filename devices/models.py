@@ -117,3 +117,34 @@ class RestrictionRule(models.Model):
     def __str__(self):
         return f"Rule for {self.group}"
 
+class AccessLog(models.Model):
+    ACTION_CHOICES = [
+        ("block", "Block Internet"),
+        ("unblock", "Unblock Internet"),
+        ("schedule", "Scheduled Restriction Applied"),
+        ("refresh", "Router Refresh"),
+        ("override", "Manual Override"),
+    ]
+
+    device = models.ForeignKey(
+        Device,
+        on_delete=models.CASCADE,
+        related_name="logs"
+    )
+
+    action = models.CharField(
+        max_length=20,
+        choices=ACTION_CHOICES
+    )
+
+    message = models.TextField(
+        blank=True,
+        help_text="Optional description of the action"
+    )
+
+    timestamp = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return f"{self.device.hostname} - {self.action} @ {self.timestamp}"
