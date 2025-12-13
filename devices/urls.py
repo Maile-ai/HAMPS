@@ -3,10 +3,23 @@ from .views import (
     DeviceListView,
     DeviceDetailView,
     AssignDeviceGroupView,
+    RouterRefreshView,
+    CreateRuleView,
+    UpdateRuleView,
+    ActiveRulesView,
 )
 
 urlpatterns = [
-    path("devices/", DeviceListView.as_view(), name="device-list"),
-    path("devices/<int:pk>/", DeviceDetailView.as_view(), name="device-detail"),
-    path("devices/group/assign/", AssignDeviceGroupView.as_view(), name="device-group-assign"),
+    # Devices
+    path("devices/", DeviceListView.as_view()),
+    path("devices/<int:pk>/", DeviceDetailView.as_view()),
+    path("devices/group/assign/", AssignDeviceGroupView.as_view()),
+
+    # Router
+    path("router/refresh/", RouterRefreshView.as_view()),
+
+    # Rules
+    path("rules/create/", CreateRuleView.as_view()),
+    path("rules/<int:pk>/update/", UpdateRuleView.as_view()),
+    path("rules/active/", ActiveRulesView.as_view()),
 ]

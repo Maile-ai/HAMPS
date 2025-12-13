@@ -23,25 +23,21 @@ class Device(models.Model):
 
     hostname = models.CharField(
         max_length=100,
-        default="unknown-device",
         help_text="Device hostname as reported by the router"
     )
 
     ip_address = models.GenericIPAddressField(
         protocol="IPv4",
-        default="0.0.0.0",
         help_text="Device IP address"
     )
 
     mac_address = models.CharField(
         max_length=17,
-        default="00:00:00:00:00:00",
         help_text="MAC address of the device"
     )
 
     device_type = models.CharField(
         max_length=50,
-        default="unknown",
         help_text="Phone, Laptop, TV, Console, etc."
     )
 
@@ -67,13 +63,11 @@ class Device(models.Model):
         help_text="Last time the device was seen on the network"
     )
 
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.hostname} ({self.ip_address})"
-    
+
 
 class RestrictionRule(models.Model):
     GROUP_CHOICES = [
@@ -86,65 +80,29 @@ class RestrictionRule(models.Model):
     group = models.CharField(
         max_length=10,
         choices=GROUP_CHOICES,
-        unique=True,
-        help_text="Device group this rule applies to"
+        unique=True
     )
 
-    active = models.BooleanField(
-        default=True,
-        help_text="Whether this rule is currently active"
-    )
+    active = models.BooleanField(default=True)
 
     block_internet = models.BooleanField(
         default=False,
-        help_text="Completely block internet access"
+        help_text="Block internet access for this group"
     )
 
     schedule_start = models.TimeField(
         null=True,
         blank=True,
-        help_text="Restriction start time (e.g. 21:00)"
+        help_text="Restriction start time"
     )
 
     schedule_end = models.TimeField(
         null=True,
         blank=True,
-        help_text="Restriction end time (e.g. 06:00)"
+        help_text="Restriction end time"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Rule for {self.group}"
-
-class AccessLog(models.Model):
-    ACTION_CHOICES = [
-        ("block", "Block Internet"),
-        ("unblock", "Unblock Internet"),
-        ("schedule", "Scheduled Restriction Applied"),
-        ("refresh", "Router Refresh"),
-        ("override", "Manual Override"),
-    ]
-
-    device = models.ForeignKey(
-        Device,
-        on_delete=models.CASCADE,
-        related_name="logs"
-    )
-
-    action = models.CharField(
-        max_length=20,
-        choices=ACTION_CHOICES
-    )
-
-    message = models.TextField(
-        blank=True,
-        help_text="Optional description of the action"
-    )
-
-    timestamp = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    def __str__(self):
-        return f"{self.device.hostname} - {self.action} @ {self.timestamp}"
