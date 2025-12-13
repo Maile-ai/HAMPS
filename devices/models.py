@@ -1,11 +1,75 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Device(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
-    name = models.CharField(max_length=100)
-    device_type = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
+    DEVICE_GROUP_CHOICES = [
+        ("kids", "Kids"),
+        ("teens", "Teens"),
+        ("adults", "Adults"),
+        ("guests", "Guests"),
+    ]
+
+    CONNECTION_TYPE_CHOICES = [
+        ("wifi", "Wi-Fi"),
+        ("ethernet", "Ethernet"),
+    ]
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="devices"
+    )
+
+    hostname = models.CharField(
+        max_length=100,
+        default="unknown-device",
+        help_text="Device hostname as reported by the router"
+    )
+
+    ip_address = models.GenericIPAddressField(
+        protocol="IPv4",
+        default="0.0.0.0",
+        help_text="Device IP address"
+    )
+
+    mac_address = models.CharField(
+        max_length=17,
+        default="00:00:00:00:00:00",
+        help_text="MAC address of the device"
+    )
+
+    device_type = models.CharField(
+        max_length=50,
+        default="unknown",
+        help_text="Phone, Laptop, TV, Console, etc."
+    )
+
+    connection_type = models.CharField(
+        max_length=10,
+        choices=CONNECTION_TYPE_CHOICES,
+        default="wifi"
+    )
+
+    lease_remaining = models.PositiveIntegerField(
+        default=0,
+        help_text="DHCP lease time remaining in minutes"
+    )
+
+    group = models.CharField(
+        max_length=10,
+        choices=DEVICE_GROUP_CHOICES,
+        default="guests"
+    )
+
+    last_seen = models.DateTimeField(
+        auto_now=True,
+        help_text="Last time the device was seen on the network"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
-        return f"{self.name} ({self.device_type})"
+        return f"{self.hostname} ({self.ip_address})"
