@@ -11,9 +11,9 @@ from .views import (
 
 urlpatterns = [
     # Devices
-    path("devices/", DeviceListView.as_view()),
-    path("devices/<int:pk>/", DeviceDetailView.as_view()),
-    path("devices/group/assign/", AssignDeviceGroupView.as_view()),
+    path("", DeviceListView.as_view(), name="device-list"),
+    path("<int:pk>/", DeviceDetailView.as_view(), name="device-detail"),
+    path("group/assign/", AssignDeviceGroupView.as_view()),
 
     # Router
     path("router/refresh/", RouterRefreshView.as_view()),

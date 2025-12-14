@@ -10,15 +10,19 @@ from .serializers import DeviceSerializer, RestrictionRuleSerializer
 # DEVICES
 # =========================
 
-class DeviceListView(generics.ListAPIView):
+class DeviceListView(generics.ListCreateAPIView):
     """
-    GET /api/devices/
+    GET  /api/devices/   → list user's devices
+    POST /api/devices/   → create a new device
     """
     serializer_class = DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return Device.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class DeviceDetailView(generics.RetrieveAPIView):
