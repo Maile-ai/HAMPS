@@ -1,277 +1,181 @@
-# H.A.M.P.S  
-## Home Access Management & Protection System  
-Backend Engineering Capstone Project
+# 🏠 HAMPS — Home Access Management & Protection System (API)
+
+HAMPS is a **Django REST Framework (DRF)** backend API designed to manage and protect home network access. It enables authenticated users to register devices, apply group-based security rules, refresh router data, and maintain a full audit trail through logging.
+
+This project was developed as a **Backend Capstone Project** and demonstrates real-world API design, authentication, authorization, logging, and policy enforcement.
 
 ---
 
-## 1. Project Overview
+## 🚀 Features
 
-H.A.M.P.S (Home Access Management & Protection System) is a backend system designed to help users manage and control access to devices connected to a home Wi-Fi network.
+### 🔐 Authentication & Users
 
-The system automatically discovers connected devices, groups them by age category, and applies internet access restrictions and schedules. It exposes a secure REST API built with Django REST Framework and integrates with a router’s internal configuration interface through abstracted backend logic.
+* Token-based authentication
+* User registration and login
+* Secure access to all protected endpoints
 
-This project was built **from scratch during the capstone phase** to demonstrate backend engineering, automation, and system design skills.
+### 📟 Device Management
 
----
+* Register devices (routers, phones, laptops, IoT, etc.)
+* Devices are **automatically linked to the authenticated user**
+* Users can only view and manage their own devices
 
-## 2. Problem Statement
+### 🧩 Group-Based Rules Engine
 
-Modern households struggle to control and monitor internet usage across multiple devices, especially for children and guests. Most router interfaces are complex and not automation-friendly.
+* Create security rules per **device group** (e.g. guests, kids)
+* Enable or disable rules dynamically
+* Fetch only **active rules**
+* Designed to simulate real network access control
 
-H.A.M.P.S solves this problem by:
-- Centralizing device management
-- Automating access control
-- Providing a secure API layer
-- Abstracting router complexity
+### 🔄 Router Refresh Action
 
----
+* Action-based endpoint to simulate router device list refresh
+* Demonstrates non-CRUD API behavior
 
-## 3. Core Features
+### 🧾 Logging & Auditing
 
-### 3.1 Device Discovery
-- Fetches connected devices from the router interface
-- Parses and stores:
-  - Hostname
-  - IP address
-  - MAC address
-  - Device type
-  - Connection type (Wi-Fi / Ethernet)
-  - DHCP lease time remaining
-- Saves devices into the backend database
+* Automatic logging of critical actions:
 
-### 3.2 Device Grouping
-Devices can be assigned to:
-- Kids
-- Teens
-- Adults
-- Guests
-
-Grouping enables rule-based access control and scheduling.
-
-### 3.3 Internet Access Restrictions
-- Block or unblock internet access for devices or groups
-- Apply scheduled restrictions (e.g. no internet for Kids after 21:00)
-- Enable or disable rule sets
-- Generate logs for every automated action
-
-### 3.4 Router Integration Layer
-- Communicates with the router using authenticated HTTP requests
-- Fetches device lists and updates access rules
-- Uses session-based authentication (credentials never exposed)
-- Abstracts router communication through backend helper functions
+  * Device creation
+  * Rule creation and updates
+  * Router refresh
+* Provides an audit trail for security and monitoring
 
 ---
 
-## 4. System Architecture
+## 🛠 Tech Stack
 
-H.A.M.P.S follows a layered backend architecture:
-
-- API Layer (Django REST Framework)
-- Business Logic Layer (rules, grouping, scheduling)
-- Router Integration Layer (HTTP abstraction)
-- Database Layer (Django ORM)
-
-The system is designed to be extendable to dashboards or mobile apps in the future.
+* **Python 3**
+* **Django 5.x**
+* **Django REST Framework (DRF)**
+* **Token Authentication**
+* **SQLite (development)**
 
 ---
 
-## 5. Models
+## 📂 Project Structure
 
-### 5.1 Device
-- hostname
-- ip_address
-- mac_address
-- device_type
-- connection_type
-- lease_remaining
-- group
-- last_seen
-
-### 5.2 RestrictionRule
-- group
-- active
-- block_internet
-- schedule_start
-- schedule_end
-
-### 5.3 AccessLog
-- device
-- action
-- timestamp
+```
+hamps_project/
+├── devices/        # Device & router logic
+├── rules/          # Group-based rules engine
+├── users/          # Authentication & user management
+├── logs/           # Activity logging
+├── hamp_project/   # Project settings & URLs
+└── manage.py
+```
 
 ---
 
-## 6. API Endpoints
+## 🔑 Authentication Flow
 
-### Device Management
-- `GET /api/devices/` – List all devices
-- `GET /api/devices/<id>/` – Retrieve a single device
-- `POST /api/devices/group/assign/` – Assign device to a group
+1. Register a user
+2. Login to receive an authentication token
+3. Use the token in request headers:
 
-### Router Integration
-- `POST /api/router/refresh/` – Fetch updated device list
-- `POST /api/router/block/` – Block device or group
-- `POST /api/router/unblock/` – Remove restrictions
+```
+Authorization: Token <your_token_here>
+```
 
-### Rule Management
-- `POST /api/rules/create/`
-- `PUT /api/rules/<id>/update/`
-- `GET /api/rules/active/`
+All sensitive endpoints require authentication.
 
 ---
 
-## 7. Tech Stack
+## 📡 API Endpoints
 
-- Python 3
-- Django
-- Django REST Framework
-- SQLite (development)
-- Git & GitHub
-- Virtual Environment (venv)
+### 👤 Users
 
----
-
-## 8. Project Structure
-
-HAMPS/
-├── hamp_project/
-├── devices/
-├── users/
-├── manage.py
-├── requirements.txt
-├── db.sqlite3
-└── README.md
-
-yaml
-Copy code
+| Method | Endpoint               | Description             |
+| ------ | ---------------------- | ----------------------- |
+| POST   | `/api/users/register/` | Register a new user     |
+| POST   | `/api/users/login/`    | Login and receive token |
 
 ---
 
-## 9. Development Setup
+### 📟 Devices
 
-### Clone Repository
-```bash
-git clone https://github.com/<your-username>/HAMPS.git
-cd HAMPS
-Create Virtual Environment
-bash
-Copy code
-python -m venv venv
-Activate Virtual Environment
-bash
-Copy code
-venv\Scripts\activate   # Windows
-source venv/bin/activate  # Linux / macOS
-Install Dependencies
-bash
-Copy code
-pip install -r requirements.txt
-Run Migrations
-bash
-Copy code
-python manage.py migrate
-Start Server
-bash
-Copy code
-python manage.py runserver
-10. Deployment
-Platform
-PythonAnywhere
+| Method | Endpoint                     | Description              |
+| ------ | ---------------------------- | ------------------------ |
+| GET    | `/api/devices/`              | List user devices        |
+| POST   | `/api/devices/`              | Create a new device      |
+| GET    | `/api/devices/<id>/`         | Retrieve a single device |
+| POST   | `/api/devices/group/assign/` | Assign device to a group |
 
-Deployment Steps
-Create a PythonAnywhere account
+---
 
-Upload project files or clone GitHub repository
+### 🔄 Router
 
-Create a virtual environment
+| Method | Endpoint                       | Description                |
+| ------ | ------------------------------ | -------------------------- |
+| POST   | `/api/devices/router/refresh/` | Refresh router device list |
 
-Install dependencies
+---
 
-Configure WSGI file
+### 🧩 Rules
 
-Run migrations
+| Method | Endpoint                          | Description               |
+| ------ | --------------------------------- | ------------------------- |
+| POST   | `/api/devices/rules/create/`      | Create a group-based rule |
+| GET    | `/api/devices/rules/active/`      | List active rules         |
+| PATCH  | `/api/devices/rules/<id>/update/` | Update / disable a rule   |
 
-Collect static files
+---
 
-Set environment variables
+### 🧾 Logs
 
-Restart application
+| Method | Endpoint     | Description                                   |
+| ------ | ------------ | --------------------------------------------- |
+| GET    | `/api/logs/` | View activity logs (admin or permitted users) |
 
-Live URL
-👉 https://maile.pythonanywhere.com/
+---
 
-11. Capstone Progress – Part 4 Reflection
-What I Built This Week
-Implemented core models for devices, rules, and logs
+## 🧪 Testing
 
-Built device discovery and storage logic
+The API was tested using **Thunder Client** and **Django Admin**:
 
-Created REST API endpoints for device management
+* Authentication flow validated
+* Device creation and isolation verified
+* Rules lifecycle tested (create → active → disable)
+* Router refresh action confirmed
+* Logs confirmed for all critical actions
 
-Structured the project for scalability
+---
 
-Deployed the backend to PythonAnywhere
+## 🔒 Security Considerations
 
-Challenges Faced
-Understanding router data formats
+* Token authentication required for all sensitive endpoints
+* Users cannot access or modify other users’ data
+* Ownership enforced server-side
+* Full audit logging enabled
 
-Designing safe router integration without exposing credentials
+---
 
-Structuring permissions and API logic correctly
+## 🎯 Capstone Objectives Met
 
-How I Solved Them
-Abstracted router logic into helper functions
+✔ RESTful API design
+✔ Authentication & authorization
+✔ Realistic business logic
+✔ Logging & audit trail
+✔ Clean project structure
+✔ Incremental Git commit history
 
-Used Django REST Framework best practices
+---
 
-Tested endpoints incrementally
+## 📌 Future Improvements
 
-Referred to official Django documentation
+* Real router integration (OpenWRT / MikroTik)
+* Time-based rule scheduling
+* Frontend dashboard
+* Role-based permissions
+* Notification system
 
-Next Steps
-Improve router automation logic
+---
 
-Add scheduling using background tasks
+## 👨‍💻 Author
 
-Enhance error handling
+**Mokete Maile**
+Backend Developer (Django / DRF)
 
-Finalize documentation and testing
+---
 
-12. Timeline
-Week 1: Setup & models
-
-Week 2: Device APIs & grouping
-
-Week 3: Access control logic
-
-Week 4: Scheduling & automation
-
-Week 5: Testing & documentation
-
-13. Security Considerations
-Router credentials are never exposed
-
-Session-based authentication is used
-
-Sensitive operations require authentication
-
-Designed with future production hardening in mind
-
-14. Future Enhancements
-Frontend dashboard
-
-Mobile app integration
-
-Real-time monitoring
-
-Advanced parental controls
-
-Notifications system
-
-15. Author
-Mokete Maile
-Backend Engineering Capstone Project
-ALX Software Engineering Program
-
-16. License
-Educational and demonstration purposes only.
+> HAMPS — securing home network access through policy-driven design.
