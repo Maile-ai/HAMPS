@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from devices.models import Device
+from datetime import datetime
 
 
 class Rule(models.Model):
@@ -55,3 +56,9 @@ class Rule(models.Model):
             f"{self.action} | "
             f"{self.start_time} - {self.end_time}"
         )
+def is_currently_applicable(self):
+    """
+    Check if the rule should apply at the current time.
+    """
+    now = datetime.now().time()
+    return self.is_active and self.start_time <= now <= self.end_time
