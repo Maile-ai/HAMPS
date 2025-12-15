@@ -14,3 +14,12 @@ class RestrictionRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestrictionRule
         fields = "__all__"
+
+
+class RestrictionRuleApplySerializer(serializers.Serializer):
+    """
+    Serializer used to apply a restriction rule to a device group.
+    """
+    group = serializers.ChoiceField(
+        choices=RestrictionRule.GROUP_CHOICES
+    )

@@ -1,10 +1,15 @@
+from datetime import datetime
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Device, RestrictionRule
-from .serializers import DeviceSerializer, RestrictionRuleSerializer
-
+from .serializers import (
+    DeviceSerializer,
+    RestrictionRuleSerializer,
+    RestrictionRuleApplySerializer,
+)
 
 # =========================
 # DEVICES
@@ -88,7 +93,7 @@ class RouterRefreshView(APIView):
 
 
 # =========================
-# RULES
+# RULES (CRUD)
 # =========================
 
 class CreateRuleView(generics.CreateAPIView):
@@ -117,3 +122,60 @@ class ActiveRulesView(generics.ListAPIView):
 
     def get_queryset(self):
         return RestrictionRule.objects.filter(active=True)
+
+
+# =========================
+# RULE APPLICATION (CORE LOGIC)
+# =========================
+
+class ApplyRestrictionRuleView(APIView):
+    """
+    POST /api/rules/apply/
+    Apply a restriction rule to all devices in a group.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = RestrictionRuleApplySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        group = serializer.validated_data["group"]
+
+        try:
+            rule = RestrictionRule.objects.get(group=group)
+        except RestrictionRule.DoesNotExist:
+            return Response(
+                {"detail": "Restriction rule not found for this group"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not rule.active:
+            return Response(
+                {"detail": "Restriction rule is not active"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check schedule window if defined
+        now = datetime.now().time()
+        if rule.schedule_start and rule.schedule_end:
+            if not (rule.schedule_start <= now <= rule.schedule_end):
+                return Response(
+                    {"detail": "Restriction rule is outside active schedule"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        devices = Device.objects.filter(
+            owner=request.user,
+            group=group
+        )
+
+        devices.update(is_blocked=rule.block_internet)
+
+        return Response(
+            {
+                "message": f"Restriction rule applied to {devices.count()} devices",
+                "group": group,
+                "blocked": rule.block_internet,
+            },
+            status=status.HTTP_200_OK
+        )
