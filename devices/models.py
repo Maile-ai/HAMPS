@@ -21,25 +21,10 @@ class Device(models.Model):
         related_name="devices"
     )
 
-    hostname = models.CharField(
-        max_length=100,
-        help_text="Device hostname as reported by the router"
-    )
-
-    ip_address = models.GenericIPAddressField(
-        protocol="IPv4",
-        help_text="Device IP address"
-    )
-
-    mac_address = models.CharField(
-        max_length=17,
-        help_text="MAC address of the device"
-    )
-
-    device_type = models.CharField(
-        max_length=50,
-        help_text="Phone, Laptop, TV, Console, etc."
-    )
+    hostname = models.CharField(max_length=100)
+    ip_address = models.GenericIPAddressField(protocol="IPv4")
+    mac_address = models.CharField(max_length=17)
+    device_type = models.CharField(max_length=50)
 
     connection_type = models.CharField(
         max_length=10,
@@ -47,10 +32,7 @@ class Device(models.Model):
         default="wifi"
     )
 
-    lease_remaining = models.PositiveIntegerField(
-        default=0,
-        help_text="DHCP lease time remaining in minutes"
-    )
+    lease_remaining = models.PositiveIntegerField(default=0)
 
     group = models.CharField(
         max_length=10,
@@ -58,11 +40,12 @@ class Device(models.Model):
         default="guests"
     )
 
-    last_seen = models.DateTimeField(
-        auto_now=True,
-        help_text="Last time the device was seen on the network"
+    is_blocked = models.BooleanField(
+        default=False,
+        help_text="Whether internet access is currently blocked for this device"
     )
 
+    last_seen = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
