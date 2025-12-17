@@ -1,181 +1,203 @@
-# 🏠 HAMPS — Home Access Management & Protection System (API)
+🏠 H.A.M.P.S
 
-HAMPS is a **Django REST Framework (DRF)** backend API designed to manage and protect home network access. It enables authenticated users to register devices, apply group-based security rules, refresh router data, and maintain a full audit trail through logging.
+Home Access Management & Protection System (Backend API)
 
-This project was developed as a **Backend Capstone Project** and demonstrates real-world API design, authentication, authorization, logging, and policy enforcement.
+📌 Project Overview
 
----
+H.A.M.P.S is a backend system built with Django REST Framework that enables users to manage and control internet access for devices connected to a home network.
+The system models router-level access control by grouping devices, applying time-based restriction rules, and maintaining a full audit trail of actions.
 
-## 🚀 Features
+This project focuses on backend engineering principles, including secure APIs, rule enforcement logic, scheduling, and logging.
 
-### 🔐 Authentication & Users
+🎯 Core Features
+✅ Device Management
 
-* Token-based authentication
-* User registration and login
-* Secure access to all protected endpoints
+Register and manage devices on a network
 
-### 📟 Device Management
+Store hostname, IP address, MAC address, device type, and connection type
 
-* Register devices (routers, phones, laptops, IoT, etc.)
-* Devices are **automatically linked to the authenticated user**
-* Users can only view and manage their own devices
+Track device activity and last seen time
 
-### 🧩 Group-Based Rules Engine
+✅ Device Grouping
 
-* Create security rules per **device group** (e.g. guests, kids)
-* Enable or disable rules dynamically
-* Fetch only **active rules**
-* Designed to simulate real network access control
+Devices can be assigned to predefined groups:
 
-### 🔄 Router Refresh Action
+Kids
 
-* Action-based endpoint to simulate router device list refresh
-* Demonstrates non-CRUD API behavior
+Teens
 
-### 🧾 Logging & Auditing
+Adults
 
-* Automatic logging of critical actions:
+Guests
 
-  * Device creation
-  * Rule creation and updates
-  * Router refresh
-* Provides an audit trail for security and monitoring
+Grouping enables rule-based access control.
 
----
+✅ Restriction Rules
 
-## 🛠 Tech Stack
+Create and manage restriction rules per group
 
-* **Python 3**
-* **Django 5.x**
-* **Django REST Framework (DRF)**
-* **Token Authentication**
-* **SQLite (development)**
+Enable or disable internet access per group
 
----
+Optional time-based schedules (e.g. block after 21:00)
 
-## 📂 Project Structure
+Rules can be activated or deactivated dynamically
 
-```
-hamps_project/
-├── devices/        # Device & router logic
-├── rules/          # Group-based rules engine
-├── users/          # Authentication & user management
-├── logs/           # Activity logging
-├── hamp_project/   # Project settings & URLs
-└── manage.py
-```
+✅ Rule Application Engine
 
----
+Apply rules to all devices in a group
 
-## 🔑 Authentication Flow
+Enforces schedule validation
 
-1. Register a user
-2. Login to receive an authentication token
-3. Use the token in request headers:
+Updates device access state (is_blocked)
 
-```
+Prevents rule execution outside active schedules
+
+✅ Activity Logging
+
+Logs all critical actions (block, unblock, rule changes)
+
+Provides a full audit trail
+
+Logs are user-scoped and immutable
+
+✅ Security
+
+Token-based authentication
+
+All endpoints require authentication
+
+Users can only access their own devices, rules, and logs
+
+🛠️ Technology Stack
+
+Python
+
+Django
+
+Django REST Framework
+
+Token Authentication
+
+SQLite (development)
+
+📂 Project Structure
+HAMPS/
+├── devices/
+│   ├── models.py
+│   ├── views.py
+│   ├── serializers.py
+│   └── urls.py
+├── rules/
+│   ├── models.py
+│   └── views.py
+├── logs/
+│   ├── models.py
+│   ├── views.py
+│   └── serializers.py
+├── hamp_project/
+│   └── urls.py
+└── README.md
+
+🔐 Authentication
+
+All endpoints require a valid authentication token.
+
+Header format:
 Authorization: Token <your_token_here>
-```
 
-All sensitive endpoints require authentication.
+🔗 API Endpoints
+📱 Devices
+Method	Endpoint	Description
+GET	/api/devices/	List user devices
+POST	/api/devices/	Create a device
+GET	/api/devices/<id>/	Retrieve a device
+POST	/api/devices/group/assign/	Assign device to group
+📶 Router (Mocked)
+Method	Endpoint	Description
+POST	/api/devices/router/refresh/	Refresh device list
+📜 Rules
+Method	Endpoint	Description
+POST	/api/devices/rules/create/	Create a restriction rule
+PATCH	/api/devices/rules/<id>/update/	Update a rule
+GET	/api/devices/rules/active/	List active rules
+POST	/api/devices/rules/apply/	Apply rule to a group
+🧾 Activity Logs
+Method	Endpoint	Description
+GET	/api/devices/logs/	List activity logs
+🧪 Example Workflow (Demo)
 
----
+Create a device
 
-## 📡 API Endpoints
+Assign device to a group
 
-### 👤 Users
+Create a restriction rule for the group
 
-| Method | Endpoint               | Description             |
-| ------ | ---------------------- | ----------------------- |
-| POST   | `/api/users/register/` | Register a new user     |
-| POST   | `/api/users/login/`    | Login and receive token |
+Apply the rule
 
----
+Verify device state changes
 
-### 📟 Devices
+Review activity logs
 
-| Method | Endpoint                     | Description              |
-| ------ | ---------------------------- | ------------------------ |
-| GET    | `/api/devices/`              | List user devices        |
-| POST   | `/api/devices/`              | Create a new device      |
-| GET    | `/api/devices/<id>/`         | Retrieve a single device |
-| POST   | `/api/devices/group/assign/` | Assign device to a group |
+This demonstrates end-to-end backend control flow.
 
----
+🧠 Design Notes
 
-### 🔄 Router
+The system abstracts router control logic for safety
 
-| Method | Endpoint                       | Description                |
-| ------ | ------------------------------ | -------------------------- |
-| POST   | `/api/devices/router/refresh/` | Refresh router device list |
+Actual network blocking is modeled, not enforced physically
 
----
+The architecture supports future integration with real routers
 
-### 🧩 Rules
+Emphasis is placed on clean logic, validation, and auditability
 
-| Method | Endpoint                          | Description               |
-| ------ | --------------------------------- | ------------------------- |
-| POST   | `/api/devices/rules/create/`      | Create a group-based rule |
-| GET    | `/api/devices/rules/active/`      | List active rules         |
-| PATCH  | `/api/devices/rules/<id>/update/` | Update / disable a rule   |
+🚀 Future Improvements
 
----
+Real router integration (OpenWRT / MikroTik / pfSense)
 
-### 🧾 Logs
+Background schedulers (Celery / cron)
 
-| Method | Endpoint     | Description                                   |
-| ------ | ------------ | --------------------------------------------- |
-| GET    | `/api/logs/` | View activity logs (admin or permitted users) |
+Frontend dashboard
 
----
+Role-based access control
 
-## 🧪 Testing
+Notification system
 
-The API was tested using **Thunder Client** and **Django Admin**:
+## ⚙️ How to Run Locally
 
-* Authentication flow validated
-* Device creation and isolation verified
-* Rules lifecycle tested (create → active → disable)
-* Router refresh action confirmed
-* Logs confirmed for all critical actions
+1. Clone the repository
+2. Create a virtual environment
+3. Install dependencies:
+   pip install -r requirements.txt
+4. Run migrations:
+   python manage.py migrate
+5. Create a superuser (optional):
+   python manage.py createsuperuser
+6. Start the server:
+   python manage.py runserver
 
----
+## Example:
 
-## 🔒 Security Considerations
+Open Postman / Thunder Client
 
-* Token authentication required for all sensitive endpoints
-* Users cannot access or modify other users’ data
-* Ownership enforced server-side
-* Full audit logging enabled
+Post http://127.0.0.1:8000/api/users/login/
+Body
+{
+  "username": "User01",
+  "password": "StrongPass01"
+}
 
----
+Copy the token
 
-## 🎯 Capstone Objectives Met
+Refresh Devices (MAIN DEMO)
 
-✔ RESTful API design
-✔ Authentication & authorization
-✔ Realistic business logic
-✔ Logging & audit trail
-✔ Clean project structure
-✔ Incremental Git commit history
+Post http://127.0.0.1:8000/api/devices/router/refresh/
 
----
+The response is 
+{
+   "message": "Router device list refreshed"
+}
 
-## 📌 Future Improvements
+👤 Author
 
-* Real router integration (OpenWRT / MikroTik)
-* Time-based rule scheduling
-* Frontend dashboard
-* Role-based permissions
-* Notification system
-
----
-
-## 👨‍💻 Author
-
-**Mokete Maile**
-Backend Developer (Django / DRF)
-
----
-
-> HAMPS — securing home network access through policy-driven design.
+Mokete Samuel Maile
+Backend Software Engineering Student @ ALX

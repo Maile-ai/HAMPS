@@ -4,6 +4,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from logs.models import ActivityLog
 from .models import Device, RestrictionRule
 from .serializers import (
     DeviceSerializer,
@@ -125,13 +126,13 @@ class ActiveRulesView(generics.ListAPIView):
 
 
 # =========================
-# RULE APPLICATION (CORE LOGIC)
+# RULE APPLICATION (CORE LOGIC + LOGGING)
 # =========================
 
 class ApplyRestrictionRuleView(APIView):
     """
     POST /api/rules/apply/
-    Apply a restriction rule to all devices in a group.
+    Apply a restriction rule to all devices in a group and log actions.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -169,13 +170,30 @@ class ApplyRestrictionRuleView(APIView):
             group=group
         )
 
-        devices.update(is_blocked=rule.block_internet)
+        blocked_state = rule.block_internet
+        action = "BLOCK" if blocked_state else "UNBLOCK"
+
+        for device in devices:
+            device.is_blocked = blocked_state
+            device.save()
+
+            ActivityLog.objects.create(
+                owner=request.user,
+                device=device,
+                rule=None,  # Group-based restriction, not per-device Rule model
+                action=action,
+                description=(
+                    f"Device '{device.hostname}' was "
+                    f"{'blocked' if blocked_state else 'unblocked'} "
+                    f"via group restriction rule '{group}'."
+                )
+            )
 
         return Response(
             {
                 "message": f"Restriction rule applied to {devices.count()} devices",
                 "group": group,
-                "blocked": rule.block_internet,
+                "blocked": blocked_state,
             },
             status=status.HTTP_200_OK
         )
